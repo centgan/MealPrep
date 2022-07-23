@@ -6,186 +6,146 @@
  * @flow strict-local
  */
 
-import React, {useState} from 'react';
+import React from 'react';
+import {Image, View} from 'react-native';
 import {NavigationContainer} from '@react-navigation/native';
 import {createNativeStackNavigator} from '@react-navigation/native-stack';
-// import type {Node} from 'react';
-import {
-  Text,
-  View,
-  StyleSheet,
-  TextInput,
-  Animated,
-  TouchableOpacity,
-  FlatList,
-  Image,
-} from 'react-native';
-// import foodPage from './Screens/Food';
-const db = require('./Data/db.json');
-const db_full = require('./Data/db_full.json');
-const Stack = createNativeStackNavigator();
+import {createBottomTabNavigator} from '@react-navigation/bottom-tabs';
 
-const App: () => Node = () => {
-  const [searchInput, setSearch] = useState(null);
+const Tab = createBottomTabNavigator();
 
-  let AnimatedHeaderValue = new Animated.Value(0);
-  let HeaderMaxHeight = 60;
-  let HeaderMinHeight = 0;
-  let SearchMaxHeight = 80;
-  let SearchMinHeight = 65;
+import foodPage from './Screens/Food';
+import HomePage from './Screens/Home';
+import CalendarPage from './Screens/Calendar';
+import Individual from './Screens/Individual';
+import SettingsPage from './Screens/Settings';
 
-  const animateHeaderHeight = AnimatedHeaderValue.interpolate({
-    inputRange: [0, HeaderMaxHeight - HeaderMinHeight],
-    outputRange: [HeaderMaxHeight, HeaderMinHeight],
-    extrapolate: 'clamp',
-  });
-
-  const animateSearchHeight = AnimatedHeaderValue.interpolate({
-    inputRange: [0, SearchMaxHeight - SearchMinHeight],
-    outputRange: [SearchMaxHeight, SearchMinHeight],
-    extrapolate: 'clamp',
-  });
-
-  const animateOpacity = AnimatedHeaderValue.interpolate({
-    inputRange: [0, HeaderMaxHeight - HeaderMinHeight],
-    outputRange: [1, 0],
-    extrapolate: 'clamp',
-  });
-
-  console.log(searchInput);
-
+const HomeStack = createNativeStackNavigator();
+const StackHome = () => {
   return (
-    <View style={styles.parent}>
-      <Animated.View style={[styles.header, {height: animateHeaderHeight}]}>
-        <Animated.Image
-          style={[styles.header_img, {opacity: animateOpacity}]}
-          source={require('./Img/MP.png')}
-        />
-        {/*change this TouchableOpacity when wanting to include settings slide*/}
-        {/*ex onPress={()=>{alert("you clicked me")}}*/}
-        {/*require('./Img/Setting.png')*/}
-        {/*{
-              uri: 'https://mealprepmanual.com/wp-content/uploads/2021/12/Ham-and-Bean-Soup-WP.jpg',
-            }*/}
-        <TouchableOpacity>
-          <Animated.Image
-            style={[styles.header_img, {opacity: animateOpacity}]}
-            source={require('./Img/Setting.png')}
-          />
-        </TouchableOpacity>
-      </Animated.View>
-      <Animated.View
-        style={[styles.searchHeader, {height: animateSearchHeight}]}>
-        <TextInput
-          style={styles.search}
-          placeholder="Search for a meal"
-          onChangeText={setSearch}
-        />
-      </Animated.View>
-      <View style={styles.dbView}>
-        <FlatList
-          scrollEventThrottle={16}
-          onScroll={Animated.event(
-            [{nativeEvent: {contentOffset: {y: AnimatedHeaderValue}}}],
-            {useNativeDriver: false},
-          )}
-          numColumns={3}
-          showsVerticalScrollIndicator={false}
-          keyExtractor={item => item.id}
-          contentContainerStyle={{paddingBottom: 75}}
-          data={db_full}
-          renderItem={({item}) => (
-            <View style={styles.each}>
-              <TouchableOpacity
-                onPress={() => {
-                  alert('you clicked me');
-                }}>
-                <Image
-                  style={styles.backImg}
-                  resizeMode="center"
-                  source={{
-                    uri: item.img,
-                  }}
-                />
-                <Text style={styles.textStyle}>{item.meal}</Text>
-              </TouchableOpacity>
-            </View>
-          )}
-        />
-      </View>
-      <View style={styles.bot}>
-        <Text>hello</Text>
-      </View>
-    </View>
-    // <foodPage />
+    <HomeStack.Navigator>
+      <HomeStack.Screen
+        name="HomeScreen"
+        component={HomePage}
+        options={{headerShown: false}}
+      />
+      <HomeStack.Screen name="Settings" component={SettingsPage} />
+    </HomeStack.Navigator>
   );
 };
 
-const styles = StyleSheet.create({
-  parent: {
-    flex: 1,
-    flexDirection: 'column',
-    // justifyContent: 'center',
-    // alignItems: 'center',
-    backgroundColor: 'gold',
-  },
-  header: {
-    backgroundColor: 'white',
-    // height: 60,
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-  },
-  header_img: {
-    margin: 20,
-    height: 30,
-    width: 30,
-    opacity: 1,
-  },
-  searchHeader: {
-    // height: 50,
-    // backgroundColor: 'black',
-  },
-  search: {
-    marginTop: 30,
-    marginHorizontal: 75,
-    borderWidth: 1,
-    borderRadius: 10,
-    height: 25,
-    paddingHorizontal: 5,
-  },
-  textStyle: {
-    textAlign: 'center',
-    fontSize: 11,
-    opacity: 1,
-    // padding: 5,
-  },
-  dbView: {
-    marginBottom: 60,
-    alignItems: 'center',
-  },
-  each: {
-    height: 110,
-    width: 110,
-    borderWidth: 1,
-    borderRadius: 10,
-    margin: 5,
-    paddingHorizontal: 5,
-    overflow: 'hidden',
-  },
-  backImg: {
-    marginVertical: 5,
-    marginHorizontal: 25,
-    height: '50%',
-    width: '50%',
-    borderRadius: 10,
-  },
-  bot: {
-    backgroundColor: 'black',
-    position: 'absolute',
-    bottom: 0,
-    width: '100%',
-    height: 60,
-  },
-});
+const CalendarStack = createNativeStackNavigator();
+const StackCalendar = () => {
+  return (
+    <CalendarStack.Navigator>
+      <CalendarStack.Screen
+        name="CalendarScreen"
+        component={CalendarPage}
+        options={{headerShown: false}}
+      />
+      <CalendarStack.Screen name="Settings" component={SettingsPage} />
+    </CalendarStack.Navigator>
+  );
+};
+
+const FoodStack = createNativeStackNavigator();
+const StackFood = () => {
+  return (
+    <FoodStack.Navigator>
+      <FoodStack.Screen
+        name="FoodScreen"
+        component={foodPage}
+        options={{headerShown: false}}
+      />
+      <FoodStack.Screen name="Settings" component={SettingsPage} />
+      <FoodStack.Screen
+        name="IndividualScreen"
+        component={Individual}
+        options={({route}) => ({title: route.params.title})}
+      />
+    </FoodStack.Navigator>
+  );
+};
+
+const App: () => Node = () => {
+  return (
+    <NavigationContainer>
+      {/*<Stack.Navigator>*/}
+      {/*  <Stack.Screen*/}
+      {/*    name="foodPage"*/}
+      {/*    component={foodPage}*/}
+      {/*    options={{headerShown: false}}*/}
+      {/*  />*/}
+      {/*  <Stack.Screen*/}
+      {/*    name="individual"*/}
+      {/*    component={Individual}*/}
+      {/*    options={({route}) => ({title: route.params.title})}*/}
+      {/*  />*/}
+      {/*</Stack.Navigator>*/}
+      <Tab.Navigator>
+        <Tab.Screen
+          name="Home"
+          component={StackHome}
+          options={{
+            headerShown: false,
+            tabBarIcon: ({focused}) => (
+              <View>
+                <Image
+                  source={require('./Img/Home.png')}
+                  resizeMode="contain"
+                  style={{
+                    height: 30,
+                    width: 30,
+                    tintColor: focused ? '#007AFF' : 'black',
+                  }}
+                />
+              </View>
+            ),
+          }}
+        />
+        <Tab.Screen
+          name="Calendar"
+          component={StackCalendar}
+          options={{
+            headerShown: false,
+            tabBarIcon: ({focused}) => (
+              <View>
+                <Image
+                  source={require('./Img/Calendar.png')}
+                  resizeMode="contain"
+                  style={{
+                    height: 30,
+                    width: 30,
+                    tintColor: focused ? '#007AFF' : 'black',
+                  }}
+                />
+              </View>
+            ),
+          }}
+        />
+        <Tab.Screen
+          name="Food"
+          component={StackFood}
+          options={{
+            headerShown: false,
+            tabBarIcon: ({focused}) => (
+              <View>
+                <Image
+                  source={require('./Img/Food.png')}
+                  resizeMode="contain"
+                  style={{
+                    height: 30,
+                    width: 30,
+                    tintColor: focused ? '#007AFF' : 'black',
+                  }}
+                />
+              </View>
+            ),
+          }}
+        />
+      </Tab.Navigator>
+    </NavigationContainer>
+  );
+};
 
 export default App;
