@@ -10,7 +10,6 @@ import {
   Image,
 } from 'react-native';
 
-const db = require('../Data/db.json');
 const db_full = require('../Data/db_full.json');
 const FoodPage = ({navigation}) => {
   const [searchInput, setSearch] = useState(null);
@@ -43,6 +42,7 @@ const FoodPage = ({navigation}) => {
   });
 
   useEffect(() => {
+    console.log('food');
     setFiltered(db_full);
   }, []);
 
