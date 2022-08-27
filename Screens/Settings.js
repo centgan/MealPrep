@@ -4,7 +4,7 @@ import {Text, View} from 'react-native';
 const SettingsPage = () => {
   return (
     <View>
-      <Text>Settings!</Text>
+      <Text>Grocery Reminder</Text>
     </View>
   );
 };

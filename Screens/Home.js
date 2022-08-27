@@ -7,25 +7,9 @@ import {
   Image,
   TouchableOpacity,
 } from 'react-native';
-import {LineChart, ProgressChart} from 'react-native-chart-kit';
+import {LineChart} from 'react-native-chart-kit';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import Fitness from '@ovalmoney/react-native-fitness';
-
-const progressData = {
-  labels: ['Swim'], // optional
-  data: [0.4],
-};
-const chartConfig = {
-  // backgroundColor: 'white',
-  backgroundGradientFrom: 'white',
-  backgroundGradientFromOpacity: 0,
-  backgroundGradientTo: 'white',
-  backgroundGradientToOpacity: 0.75,
-  color: (opacity = 1) => `rgba(26, 255, 146, ${opacity})`,
-  strokeWidth: 2, // optional, default 3
-  barPercentage: 0.5,
-  useShadowColorFromDataset: false, // optional
-};
 
 const permissions = [
   {
@@ -33,8 +17,36 @@ const permissions = [
   },
 ];
 
-// let stepChart = [];
-// let dataSets = {};
+const calories = (age, height, weight, activity, maintain) => {
+  let b = weight * 6.3 + 66;
+  let m = height * 12.9 + b;
+  let bmr = age * 6.8 - m;
+
+  if (activity.toUpperCase().indexOf('SEDENTARY') >= 0) {
+    bmr *= 1.2;
+  } else if (activity.toUpperCase().indexOf('LIGHT') >= 0) {
+    bmr *= 1.375;
+  } else if (activity.toUpperCase().indexOf('MODERATE') >= 0) {
+    bmr *= 1.55;
+  } else if (activity.toUpperCase().indexOf('INTENSE') >= 0) {
+    bmr *= 1.75;
+  } else if (activity.toUpperCase().indexOf('EXTREME') >= 0) {
+    bmr *= 1.9;
+  }
+
+  switch (maintain) {
+    case '0':
+      break;
+    case '-1':
+      bmr += 500;
+      break;
+    case '+1':
+      bmr -= 500;
+      break;
+  }
+
+  return Math.round((bmr *= -1));
+};
 
 // only run once a day
 const dynamicWeek = () => {
@@ -55,87 +67,13 @@ const dynamicWeek = () => {
   return weekList;
 };
 
-// let dataSets = {
-//   labels: dynamicWeek(),
-//   datasets: dataSets],
-// };
-
-const storeAge = async value => {
+const store = async (value, which) => {
   try {
-    await AsyncStorage.setItem('Age', value);
+    await AsyncStorage.setItem(which, value);
   } catch (e) {
     console.log(e);
   }
 };
-const storeHeight = async value => {
-  try {
-    await AsyncStorage.setItem('Height', value);
-  } catch (e) {
-    console.log(e);
-  }
-};
-const storeWeight = async value => {
-  try {
-    await AsyncStorage.setItem('Weight', value);
-  } catch (e) {
-    console.log(e);
-  }
-};
-const storeActivity = async value => {
-  try {
-    await AsyncStorage.setItem('Activity', value);
-  } catch (e) {
-    console.log(e);
-  }
-};
-const storeMaintain = async value => {
-  try {
-    await AsyncStorage.setItem('Maintain', value);
-  } catch (e) {
-    console.log(e);
-  }
-};
-
-// const getAge = async () => {
-//   try {
-//     const value = await AsyncStorage.getItem('Age');
-//     if (value !== null) {
-//       return value;
-//     }
-//   } catch (e) {
-//     console.log(e);
-//   }
-// };
-// const getHeight = async () => {
-//   try {
-//     const value = await AsyncStorage.getItem('Height');
-//     if (value !== null) {
-//       return value;
-//     }
-//   } catch (e) {
-//     console.log(e);
-//   }
-// };
-// const getWeight = async () => {
-//   try {
-//     const value = await AsyncStorage.getItem('Weight');
-//     if (value !== null) {
-//       return value;
-//     }
-//   } catch (e) {
-//     console.log(e);
-//   }
-// };
-// const getActivity = async () => {
-//   try {
-//     const value = await AsyncStorage.getItem('Activity');
-//     if (value !== null) {
-//       return value;
-//     }
-//   } catch (e) {
-//     console.log(e);
-//   }
-// };
 
 const getPhysical = async text => {
   try {
@@ -168,7 +106,7 @@ const HomePage = () => {
       .catch(err => console.log(err));
     if (text) {
       if (w !== text) {
-        await storeAge(text);
+        await store(text, 'Age');
       }
       setAge(text);
     } else {
@@ -185,7 +123,7 @@ const HomePage = () => {
       .catch(err => console.log(err));
     if (text) {
       if (w !== text) {
-        await storeHeight(text);
+        await store(text, 'Height');
       }
       setHeight(text);
     } else {
@@ -202,7 +140,7 @@ const HomePage = () => {
       .catch(err => console.log(err));
     if (text) {
       if (w !== text) {
-        await storeWeight(text);
+        await store(text, 'Weight');
       }
       setWeight(text);
     } else {
@@ -219,7 +157,7 @@ const HomePage = () => {
       .catch(err => console.log(err));
     if (text) {
       if (w !== text) {
-        await storeActivity(text);
+        await store(text, 'Activity');
       }
       setActivity(text);
     } else {
@@ -229,19 +167,19 @@ const HomePage = () => {
   const checkMaintain = async num => {
     switch (num) {
       case -1:
-        // console.log('less 0');
+        console.log('less 0');
         setMain('-1');
-        await storeMaintain('-1');
+        await store('-1', 'Maintain');
         break;
       case 0:
         // console.log('0');
         setMain('0');
-        await storeMaintain('0');
+        await store('0', 'Maintain');
         break;
       case +1:
         // console.log('greater 0');
         setMain('+1');
-        await storeMaintain('+1');
+        await store('+1', 'Maintain');
         break;
     }
   };
@@ -271,16 +209,13 @@ const HomePage = () => {
     let num;
     switch (Main) {
       case '-1':
-        // console.log('-1 in');
         num =
           'https://pluspng.com/img-png/stickman-png-hd-free-1074x2400-stick-man-wallpapers-1074.png';
         break;
       case '0':
-        // console.log('0 in');
         num = 'https://webstockreview.net/images/clipart-bathroom-symbol-7.png';
         break;
       case '+1':
-        // console.log('+1 in');
         num = 'https://webstockreview.net/images/fat-clipart-overweight-1.png';
         break;
     }
@@ -298,7 +233,6 @@ const HomePage = () => {
       setAge(age);
       setHeight(height);
       setWeight(weight);
-      // console.log(setURl());
       setActivity(activityAsync);
       setMain(maintain);
     };
@@ -320,25 +254,17 @@ const HomePage = () => {
       weekDate.setDate(we);
       let theDates = {startDate: weekDate, endDate: curDate};
       let sum = await Fitness.getSteps(theDates);
-      setSteps(sum);
-      // console.log(Steps);
-      // console.log(sum);
-      // stepChart = sum;
-      // dataSets.labels = dynamicWeek();
-      // dataSets.datasets = [{}];
-      // for (let i = 0; i < sum.length; i++) {
-      //   // stepChart[i] = sum[i].quantity;
-      //   // sum[i].quantity = parseInt(sum[i].quantity);
-      //   stepChart.push(parseInt(sum[i].quantity, 10));
-      // }
-      // dataSets.datasets[0].data = stepChart;
-      // stepChart.map(item => {
-      //   console.log(item.quantity);
-      // });
-      // let dataSets;
-      // dataSets.data = stepChart;
-      // console.log(stepChart);
-      // console.log(dataSets.datasets);
+
+      let b = [0, 0, 0, 0, 0, 0, 0];
+      for (let i = 0; i < 7; i++) {
+        for (let j = 0; j < sum.length; j++) {
+          let partA = sum[j].startDate.split('-')[2].split('T')[0];
+          if (parseInt(weekDate.getDate() + i, 10) === parseInt(partA, 10)) {
+            b[i] = sum[j].quantity;
+          }
+        }
+      }
+      setSteps(b);
     };
     const req = async () => {
       await Fitness.requestPermissions(permissions)
@@ -354,10 +280,8 @@ const HomePage = () => {
       await Fitness.isAuthorized(permissions)
         .then(authorized => {
           if (authorized === true) {
-            getSteps();
             setAuth(true);
             getSteps();
-            console.log('got');
           } else {
             req();
           }
@@ -369,21 +293,26 @@ const HomePage = () => {
     };
     pull();
     auth();
-    // dynamicWeek();
   }, []);
 
   let a = [0, 0, 0, 0, 0, 0, 0];
-  const dynamicData = () => {
-    // console.log(Steps, 'dyn');
-    // console.log(Auth);
-    // console.log(stepChart);
+  const dynamicData = which => {
     if (Auth && Steps != null) {
       a = [];
       for (let i = 0; i < Steps.length; i++) {
-        a.push(Steps[i].quantity);
+        a.push(Steps[i]);
       }
     }
-    return a;
+    // setMove(a[a.length - 1]);
+    if (which === 0) {
+      return a;
+    } else {
+      if (a[a.length - 1] <= 5000) {
+        return 'Get up and move';
+      } else {
+        return 'Boss man moves';
+      }
+    }
   };
 
   return (
@@ -397,25 +326,19 @@ const HomePage = () => {
             labels: dynamicWeek(),
             datasets: [
               {
-                data: dynamicData(),
+                data: dynamicData(0),
               },
             ],
           }}
           width={310} // from react-native
           height={190}
-          // yAxisLabel="$"
-          // yAxisSuffix="k"
           yAxisInterval={1} // optional, defaults to 1
           chartConfig={{
-            backgroundColor: '#e26a00',
-            backgroundGradientFrom: '#fb8c00',
-            backgroundGradientTo: '#ffa726',
+            backgroundColor: '#049A8F',
+            backgroundGradientFrom: '#03B5AA',
+            backgroundGradientTo: '#d69e51',
             decimalPlaces: 0, // optional, defaults to 2dp
             color: (opacity = 1) => `rgba(255, 255, 255, ${opacity})`,
-            labelColor: (opacity = 1) => `rgba(255, 255, 255, ${opacity})`,
-            // style: {
-            //   borderRadius: 16,
-            // },
             propsForDots: {
               r: '6',
               strokeWidth: '2',
@@ -428,18 +351,13 @@ const HomePage = () => {
       <View style={styles.rowView}>
         <View style={styles.halfView}>
           <Text style={styles.titleText}>Calories</Text>
-          <ProgressChart
-            data={progressData}
-            width={150}
-            height={130}
-            strokeWidth={16}
-            radius={50}
-            chartConfig={chartConfig}
-            hideLegend={true}
-          />
+          <Text style={styles.caloriesText}>
+            {calories(Age, Height, Weight, Activity, Main)}
+          </Text>
         </View>
         <View style={styles.halfView}>
           <Text style={styles.titleText}>Reflection</Text>
+          <Text style={styles.reflectionText}>{dynamicData(1)}</Text>
         </View>
       </View>
       <View style={styles.rowView}>
@@ -521,21 +439,28 @@ const HomePage = () => {
 // activity view
 const styles = StyleSheet.create({
   parent: {
-    marginTop: 20,
-    marginHorizontal: 25,
+    paddingTop: 20,
+    paddingHorizontal: 25,
+    backgroundColor: '#00BFB3',
   },
   Welcome: {
     marginBottom: 5,
     textAlign: 'left',
     fontSize: 26,
     fontWeight: 'bold',
+    color: '#023436',
   },
   chartView: {
     width: 330,
     height: 225,
-    backgroundColor: 'aqua',
+    backgroundColor: '#037971',
     // alignItems: 'center',
     borderRadius: 16,
+    // shadowOffset: {
+    //   width: -5,
+    //   height: 5,
+    // },
+    // shadowOpacity: 1,
   },
   chart: {
     // marginVertical: 8,
@@ -551,31 +476,35 @@ const styles = StyleSheet.create({
   rowView: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    marginLeft: 10,
+    // marginLeft: 10,
     marginTop: 10,
   },
   halfView: {
-    backgroundColor: 'white',
     height: 153,
     width: 153,
     borderRadius: 16,
+    backgroundColor: '#037971',
   },
   physical: {
     // marginLeft: 10,
     marginBottom: 11,
     width: 153,
     height: 44,
-    backgroundColor: 'gold',
+    backgroundColor: '#03B5AA',
     borderRadius: 16,
     flexDirection: 'row',
     justifyContent: 'space-between',
+    shadowOffset: {
+      width: -5,
+      height: 5,
+    },
+    shadowOpacity: 1,
   },
   physicalText: {
     fontWeight: 'bold',
     fontSize: 18,
     marginLeft: 15,
     marginTop: 10,
-    // textAlign: 'center',
   },
   input: {
     height: 34,
@@ -589,7 +518,12 @@ const styles = StyleSheet.create({
   activityInput: {
     height: 34,
     width: 133,
-    backgroundColor: 'gold',
+    backgroundColor: '#03B5AA',
+    shadowOffset: {
+      width: -5,
+      height: 5,
+    },
+    shadowOpacity: 1,
     marginHorizontal: 10,
     borderRadius: 16,
     padding: 5,
@@ -608,7 +542,12 @@ const styles = StyleSheet.create({
     // justifyContent: 'space-between',
   },
   buttonClick: {
-    backgroundColor: 'gold',
+    backgroundColor: '#03B5AA',
+    shadowOffset: {
+      width: -5,
+      height: 5,
+    },
+    shadowOpacity: 1,
     height: 30,
     width: 30,
     borderRadius: 16,
@@ -617,6 +556,24 @@ const styles = StyleSheet.create({
   buttonText: {
     textAlign: 'center',
     marginVertical: 6,
+  },
+  caloriesText: {
+    fontSize: 46,
+    fontWeight: 'bold',
+    color: '#47d3b3',
+    marginTop: 25,
+    textAlign: 'center',
+    fontFamily: 'American Typewriter',
+    textDecorationLine: 'underline',
+  },
+  reflectionText: {
+    fontSize: 28,
+    fontWeight: 'bold',
+    color: '#47d3b3',
+    marginTop: 20,
+    textAlign: 'center',
+    fontFamily: 'American Typewriter',
+    marginHorizontal: 5,
   },
 });
 

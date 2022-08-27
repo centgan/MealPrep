@@ -108,22 +108,14 @@ const FoodPage = ({navigation}) => {
               <TouchableOpacity
                 onPress={() => {
                   // navigation.setOptions({title: item.meal});
-                  let passing = {};
-                  passing.meal = item.meal;
-                  passing.ingredients = item.ingredients;
-                  passing.instructions = item.instructions;
-                  passing.macros = item.macros;
-                  passing.servings = item.servings;
-                  passing.link = item.link;
-                  passing.img = item.img;
                   navigation.navigate('IndividualScreen', {
                     title: item.meal,
                     ingredients: item.ingredients,
-                    instructions: item.instructions,
-                    macros: item.macros,
-                    servings: item.servings,
-                    link: item.link,
-                    img: item.img,
+                    // instructions: item.instructions,
+                    // macros: item.macros,
+                    // servings: item.servings,
+                    // link: item.link,
+                    // img: item.img,
                   });
                 }}>
                 <Image
@@ -152,7 +144,7 @@ const styles = StyleSheet.create({
     flexDirection: 'column',
     // justifyContent: 'center',
     // alignItems: 'center',
-    backgroundColor: 'gold',
+    backgroundColor: '#00BFB3',
   },
   header: {
     backgroundColor: 'white',
@@ -191,11 +183,11 @@ const styles = StyleSheet.create({
   each: {
     height: 110,
     width: 110,
-    borderWidth: 1,
     borderRadius: 10,
     margin: 5,
     paddingHorizontal: 5,
     overflow: 'hidden',
+    backgroundColor: '#049A8F',
   },
   backImg: {
     marginVertical: 5,

@@ -19,6 +19,7 @@ import HomePage from './Screens/Home';
 import CalendarPage from './Screens/Calendar';
 import Individual from './Screens/Individual';
 import SettingsPage from './Screens/Settings';
+import AddPage from './Screens/Add';
 
 const HomeStack = createNativeStackNavigator();
 const StackHome = () => {
@@ -29,7 +30,6 @@ const StackHome = () => {
         component={HomePage}
         options={{headerShown: false}}
       />
-      <HomeStack.Screen name="Settings" component={SettingsPage} />
     </HomeStack.Navigator>
   );
 };
@@ -43,7 +43,16 @@ const StackCalendar = () => {
         component={CalendarPage}
         options={{headerShown: false}}
       />
-      <CalendarStack.Screen name="Settings" component={SettingsPage} />
+      <CalendarStack.Screen
+        name="IndividualScreen"
+        component={Individual}
+        options={({route}) => ({title: route.params.title})}
+      />
+      <CalendarStack.Screen
+        name="AddPage"
+        component={AddPage}
+        options={({route}) => ({title: route.params.title})}
+      />
     </CalendarStack.Navigator>
   );
 };
@@ -70,18 +79,6 @@ const StackFood = () => {
 const App: () => Node = () => {
   return (
     <NavigationContainer>
-      {/*<Stack.Navigator>*/}
-      {/*  <Stack.Screen*/}
-      {/*    name="foodPage"*/}
-      {/*    component={foodPage}*/}
-      {/*    options={{headerShown: false}}*/}
-      {/*  />*/}
-      {/*  <Stack.Screen*/}
-      {/*    name="individual"*/}
-      {/*    component={Individual}*/}
-      {/*    options={({route}) => ({title: route.params.title})}*/}
-      {/*  />*/}
-      {/*</Stack.Navigator>*/}
       <Tab.Navigator>
         <Tab.Screen
           name="Home"

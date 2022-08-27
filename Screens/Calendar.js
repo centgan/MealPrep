@@ -1,7 +1,14 @@
-import React, {useState, useEffect} from 'react';
-import {Text, View, StyleSheet} from 'react-native';
+import React, {useEffect, useState} from 'react';
+import {
+  StyleSheet,
+  View,
+  Text,
+  ScrollView,
+  TouchableOpacity,
+  TextInput,
+} from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import {Calendar, CalendarList, Agenda} from 'react-native-calendars';
+import {CalendarList, Calendar} from 'react-native-calendars';
 
 let monthNames = [
   'Jan',
@@ -57,12 +64,12 @@ const calories = (age, height, weight, activity, maintain) => {
   }
 
   switch (maintain) {
-    case 0:
+    case '0':
       break;
-    case -1:
+    case '-1':
       bmr += 500;
       break;
-    case 1:
+    case '+1':
       bmr -= 500;
       break;
   }
@@ -70,19 +77,54 @@ const calories = (age, height, weight, activity, maintain) => {
   return Math.round((bmr *= -1));
 };
 
-function sum(day) {
+// 0 is calories 1 is carbs 2 is fat and 3 is protein
+function sum(day, which) {
   let total = 0;
+  let calc;
+  switch (which) {
+    case 0:
+      calc = 'cals';
+      break;
+    case 1:
+      calc = 'carbs';
+      break;
+    case 2:
+      calc = 'fat';
+      break;
+    case 3:
+      calc = 'protein';
+      break;
+  }
   Object.keys(day).forEach(function (key) {
-    // console.log(day[key]);
-    if (key !== 'date') {
-      if (typeof day[key][0] === 'object') {
-        total += day[key][0][1] * day[key].length;
-      } else {
-        total += day[key][1];
+    // console.log(key);
+    if (
+      key !== 'date' &&
+      key !== 'id' &&
+      key !== 'totalCals' &&
+      key !== 'totalCarbs' &&
+      key !== 'totalFat' &&
+      key !== 'totalProtein'
+    ) {
+      for (let i of day[key]) {
+        total += i[calc] * i.multi;
       }
     }
   });
   return total;
+}
+
+function placing(Food, number) {
+  let place = {};
+
+  place.id = 0;
+  place.meal = Food[0];
+  place.cals = Food[1];
+  place.carbs = Food[2];
+  place.fat = Food[3];
+  place.protein = Food[4];
+  place.multi = number;
+
+  return place;
 }
 
 const planner = async cals => {
@@ -100,7 +142,7 @@ const planner = async cals => {
   let month = [];
   let All = await AsyncStorage.getItem('plan');
   let all = JSON.parse(All);
-  console.log(all, 'this is first');
+  // console.log(all, 'this is first');
 
   let breakfastFood;
   let lunchFood;
@@ -126,8 +168,7 @@ const planner = async cals => {
     let snackOver = overFlow.snack;
     day = {};
 
-    let dayNum = d.getDate() + i;
-    day.date = dayNum;
+    day.date = d.getDate() + i;
 
     // breakfast random generator
     if (breakfastOver.length === 0) {
@@ -136,8 +177,14 @@ const planner = async cals => {
         breakfastOver.push([
           breakfastFood.meal,
           parseInt(breakfastFood.macros.calories.split(/([0-9]+)/)[1], 10),
+          parseInt(breakfastFood.macros.carbs.split('g')[0], 10),
+          parseInt(breakfastFood.macros.fat.split('g')[0], 10),
+          parseInt(breakfastFood.macros.protein.split('g')[0], 10),
         ]);
       }
+      breakfastFood = breakfastOver[0];
+    } else {
+      breakfastFood = breakfastOver[0];
     }
     if (breakfastOver[breakfastOver.length - 1][1] < 50) {
       let addList = [];
@@ -147,10 +194,11 @@ const planner = async cals => {
       } else {
         number = breakfastOver.length;
       }
+
       for (let j = 0; j < number; j++) {
-        let additional = breakfastOver.pop();
-        addList.push(additional);
+        breakfastOver.pop();
       }
+      addList.push(placing(breakfastFood, number));
       day.breakfast = addList;
     } else if (breakfastOver[breakfastOver.length - 1][1] < 100) {
       let addList = [];
@@ -160,10 +208,11 @@ const planner = async cals => {
       } else {
         number = breakfastOver.length;
       }
+
       for (let j = 0; j < number; j++) {
-        let additional = breakfastOver.pop();
-        addList.push(additional);
+        breakfastOver.pop();
       }
+      addList.push(placing(breakfastFood, number));
       day.breakfast = addList;
     } else if (breakfastOver[breakfastOver.length - 1][1] < 200) {
       let addList = [];
@@ -173,13 +222,17 @@ const planner = async cals => {
       } else {
         number = breakfastOver.length;
       }
+
       for (let j = 0; j < number; j++) {
-        let additional = breakfastOver.pop();
-        addList.push(additional);
+        breakfastOver.pop();
       }
+      addList.push(placing(breakfastFood, number));
       day.breakfast = addList;
     } else {
-      day.breakfast = breakfastOver.pop();
+      let addList = [];
+      breakfastOver.pop();
+      addList.push(placing(breakfastFood, 1));
+      day.breakfast = addList;
     }
 
     // lunch generator
@@ -189,8 +242,14 @@ const planner = async cals => {
         lunchOver.push([
           lunchFood.meal,
           parseInt(lunchFood.macros.calories.split(/([0-9]+)/)[1], 10),
+          parseInt(lunchFood.macros.carbs.split('g')[0], 10),
+          parseInt(lunchFood.macros.fat.split('g')[0], 10),
+          parseInt(lunchFood.macros.protein.split('g')[0], 10),
         ]);
       }
+      lunchFood = lunchOver[0];
+    } else {
+      lunchFood = lunchOver[0];
     }
     if (lunchOver[lunchOver.length - 1][1] < 200) {
       let addList = [];
@@ -200,13 +259,17 @@ const planner = async cals => {
       } else {
         number = lunchOver.length;
       }
+
       for (let j = 0; j < number; j++) {
-        let additional = lunchOver.pop();
-        addList.push(additional);
+        lunchOver.pop();
       }
+      addList.push(placing(lunchFood, number));
       day.lunch = addList;
     } else {
-      day.lunch = lunchOver.pop();
+      let addList = [];
+      lunchOver.pop();
+      addList.push(placing(lunchFood, 1));
+      day.lunch = addList;
     }
 
     // dinner generator
@@ -219,13 +282,19 @@ const planner = async cals => {
         dinnerOver.push([
           dinnerFood.meal,
           parseInt(dinnerFood.macros.calories.split(/([0-9]+)/)[1], 10),
+          parseInt(dinnerFood.macros.carbs.split('g')[0], 10),
+          parseInt(dinnerFood.macros.fat.split('g')[0], 10),
+          parseInt(dinnerFood.macros.protein.split('g')[0], 10),
         ]);
       }
+      dinnerFood = dinnerOver[0];
+    } else {
+      dinnerFood = dinnerOver[0];
     }
 
     // multiplier for additional food
     let multiplier = 1;
-    let total = sum(day);
+    let total = sum(day, 0);
 
     let s = cals - total;
     let su = dinnerOver[0][1];
@@ -242,12 +311,12 @@ const planner = async cals => {
       number = dinnerOver.length;
     }
     for (let j = 0; j < number; j++) {
-      let additional = dinnerOver.pop();
-      addList.push(additional);
+      dinnerOver.pop();
     }
+    addList.push(placing(dinnerFood, number));
     day.dinner = addList;
 
-    total = sum(day);
+    total = sum(day, 0);
 
     s = cals - total;
     multiplier = 1;
@@ -258,9 +327,16 @@ const planner = async cals => {
         dessertOver.push([
           dessertFood.meal,
           parseInt(dessertFood.macros.calories.split(/([0-9]+)/)[1], 10),
+          parseInt(dessertFood.macros.carbs.split('g')[0], 10),
+          parseInt(dessertFood.macros.fat.split('g')[0], 10),
+          parseInt(dessertFood.macros.protein.split('g')[0], 10),
         ]);
       }
+      dessertFood = dessertOver[0];
+    } else {
+      dessertFood = dessertOver[0];
     }
+
     su = dessertOver[0][1];
     product = Math.floor(s / su);
     if (product > 1) {
@@ -273,12 +349,12 @@ const planner = async cals => {
       number = dessertOver.length;
     }
     for (let j = 0; j < number; j++) {
-      let additional = dessertOver.pop();
-      addList.push(additional);
+      dessertOver.pop();
     }
+    addList.push(placing(dessertFood, number));
     day.dessert = addList;
 
-    total = sum(day);
+    total = sum(day, 0);
 
     s = cals - total;
 
@@ -288,8 +364,14 @@ const planner = async cals => {
         snackOver.push([
           snackFood.meal,
           parseInt(snackFood.macros.calories.split(/([0-9]+)/)[1], 10),
+          parseInt(snackFood.macros.carbs.split('g')[0], 10),
+          parseInt(snackFood.macros.fat.split('g')[0], 10),
+          parseInt(snackFood.macros.protein.split('g')[0], 10),
         ]);
       }
+      snackFood = snackOver[0];
+    } else {
+      snackFood = snackOver[0];
     }
 
     su = snackOver[0][1];
@@ -306,11 +388,19 @@ const planner = async cals => {
       number = snackOver.length;
     }
     for (let j = 0; j < number; j++) {
-      let additional = snackOver.pop();
-      addList.push(additional);
+      snackOver.pop();
     }
+    addList.push(placing(snackFood, number));
+
     day.snack = addList;
-    day.total = sum(day);
+    let totCar = sum(day, 1);
+    let totFat = sum(day, 2);
+    let totPro = sum(day, 3);
+    day.totalCals = sum(day, 0);
+    day.totalCarbs = totCar;
+    day.totalFat = totFat;
+    day.totalProtein = totPro;
+
     month.push(day);
 
     overFlow.breakfast = breakfastOver;
@@ -319,64 +409,80 @@ const planner = async cals => {
     overFlow.dessert = dessertOver;
     overFlow.snack = snackOver;
 
-    // const overflow = await AsyncStorage.getItem('overflow');
-    // let testover = JSON.parse(overflow);
-    // console.log(testover);
-    // await storeValue(first, 'overflow');
-    // console.log('fin');
     await storeValue(overFlow, 'overflow');
-    // console.log(day);
   }
   let monthName = monthNames[monthNum];
-  if (!('2022' in all)) {
+  if (!(year in all)) {
     all[year] = {};
   }
   all[year][monthName] = month;
 
   await storeValue(all, 'plan');
-  console.log(all);
-  // all[2022][monthName] = month;
-  // console.log(all);
-  // await fs.writeFile(
-  //   '../Data/planner.json',
-  //   JSON.stringify(month, null, 4),
-  //   err => {
-  //     if (err) {
-  //       console.log(err);
-  //     }
-  //   },
-  // );
 };
 
-const getStart = () => {
-  return 2;
-};
+const CalendarPage = ({navigation}) => {
+  const [Show, setShow] = useState(false);
+  const [ShowDay, setShowDay] = useState({});
+  const [DayData, setDayData] = useState('');
+  const [Index, setIndex] = useState(0);
+  const [MultiBreak, setMultiBreak] = useState('');
+  const [MultiLunch, setMultiLunch] = useState('');
+  const [MultiDinner, setMultiDinner] = useState('');
+  const [MultiDessert, setMultiDessert] = useState('');
+  const [MultiSnack, setMultiSnack] = useState('');
+  // 0 is showing food 1 is showing reflection for that day
+  const [Reflect, setReflect] = useState(0);
+  const TopSame = () => {
+    return (
+      <View>
+        <View style={styles.row}>
+          <View style={styles.top}>
+            <Text style={styles.topText}>Calories:</Text>
+            <Text style={styles.numberText}>{DayData.totalCals}</Text>
+          </View>
+          <View style={styles.top}>
+            <Text style={styles.topText}>Carbs: </Text>
+            <Text style={styles.numberText}>{DayData.totalCarbs}g</Text>
+          </View>
+          <View style={styles.top}>
+            <Text style={styles.topText}>Fats: </Text>
+            <Text style={styles.numberText}>{DayData.totalFat}g</Text>
+          </View>
+          <View style={styles.top}>
+            <Text style={styles.topText}>Protein: </Text>
+            <Text style={styles.numberText}>{DayData.totalProtein}g</Text>
+          </View>
+        </View>
+        <View style={styles.row}>
+          <View style={styles.Multiple}>
+            <Text style={styles.otherTop}>Multi</Text>
+          </View>
+          <View style={styles.Meal}>
+            <Text style={styles.otherTop}>Meal</Text>
+          </View>
+          <View style={styles.Multiple}>
+            <Text style={styles.otherTop}>Cals</Text>
+          </View>
+          <View style={styles.Multiple}>
+            <Text style={styles.otherTop}>Carb</Text>
+          </View>
+          <View style={styles.Multiple}>
+            <Text style={styles.otherTop}>Fat</Text>
+          </View>
+          <View style={styles.Multiple}>
+            <Text style={styles.otherTop}>Pro</Text>
+          </View>
+        </View>
+      </View>
+    );
+  };
 
-const calendarPress = async datePressed => {
-  let All = await AsyncStorage.getItem('plan');
-  let all = JSON.parse(All);
-
-  let dashFormat = datePressed.dateString;
-  let yearFormat = datePressed.year;
-  let monthFormat = monthNames[datePressed.month - 1];
-  let dayFormat = datePressed.day;
-  console.log(dashFormat, yearFormat, monthFormat, dayFormat);
-  let index;
-
-  console.log(all[yearFormat][monthFormat]);
-  for (let i = 0; i < all[yearFormat][monthFormat].length; i++) {
-    if (dayFormat === all[yearFormat][monthFormat][i].date) {
-      index = i;
-    }
-  }
-  console.log(index);
-};
-
-const CalendarPage = () => {
-  const [Age, setAge] = useState('');
-  const [Height, setHeight] = useState('');
-  const [Weight, setWeight] = useState('');
-  const [Activity, setActivity] = useState('');
+  const d = new Date();
+  //month to start renders
+  // start month is september
+  const getStart = () => {
+    return 12;
+  };
 
   useEffect(() => {
     const get = async () => {
@@ -385,11 +491,10 @@ const CalendarPage = () => {
       const weight = await AsyncStorage.getItem('Weight');
       const activity = await AsyncStorage.getItem('Activity');
       const maintain = await AsyncStorage.getItem('Maintain');
-
-      setAge(age);
-      setHeight(height);
-      setWeight(weight);
-      setActivity(activity);
+      let allData = await AsyncStorage.getItem('plan');
+      allData = JSON.parse(allData);
+      setShow(false);
+      setReflect(0);
 
       let cals = calories(
         age,
@@ -398,23 +503,455 @@ const CalendarPage = () => {
         activity,
         parseInt(maintain, 10),
       );
-      // console.log(
-      //   calories(age, height, weight, activity, parseInt(maintain, 10)),
-      // );
 
-      // run planner and cals once a month
-      planner(2500);
+      console.log(cals);
+      let year = d.getFullYear();
+      let month = d.getMonth();
+      if (!(year in allData)) {
+        planner(cals);
+      } else {
+        if (!(monthNames[month] in allData[year])) {
+          planner(cals);
+        }
+      }
     };
     get();
   }, []);
+
+  //repeated things
+  const repetition = item => {
+    return (
+      <TouchableOpacity
+        key={item.id}
+        style={styles.row}
+        onPress={() => {
+          navigation.navigate('IndividualScreen', {
+            title: item.meal,
+          });
+        }}>
+        <View style={styles.MultipleWide}>
+          <Text style={styles.TextMain}>{item.multi}</Text>
+          {/*<TouchableOpacity style={styles.check} />*/}
+        </View>
+        <View style={styles.MealWide}>
+          <Text style={styles.TextMain}>{item.meal}</Text>
+        </View>
+        <View style={styles.MultipleWide}>
+          <Text style={styles.TextMain}>{item.cals}</Text>
+        </View>
+        <View style={styles.MultipleWide}>
+          <Text style={styles.TextMain}>{item.carbs}</Text>
+        </View>
+        <View style={styles.MultipleWide}>
+          <Text style={styles.TextMain}>{item.fat}</Text>
+        </View>
+        <View style={styles.MultipleWide}>
+          <Text style={styles.TextMain}>{item.protein}</Text>
+        </View>
+      </TouchableOpacity>
+    );
+  };
+
+  const calendarPress = async datePressed => {
+    let All = await AsyncStorage.getItem('plan');
+    let all = JSON.parse(All);
+
+    let yearFormat = datePressed.year;
+    let monthFormat = monthNames[datePressed.month - 1];
+    let dayFormat = datePressed.day;
+    // console.log(dashFormat, yearFormat, monthFormat, dayFormat);
+    let index;
+
+    // console.log(all[yearFormat][monthFormat]);
+    for (let i = 0; i < all[yearFormat][monthFormat].length; i++) {
+      if (dayFormat === all[yearFormat][monthFormat][i].date) {
+        index = i;
+      }
+    }
+    setShow(true);
+
+    // console.log(all[yearFormat][monthFormat][index]);
+    setIndex(index);
+    setDayData(all[yearFormat][monthFormat][index]);
+    // showing(all[yearFormat][monthFormat][index]);
+    // console.log(index);
+  };
+
+  const get = async text => {
+    try {
+      const value = await AsyncStorage.getItem(text);
+      if (value !== null) {
+        return value;
+      }
+    } catch (e) {
+      console.log(e);
+    }
+  };
+
+  const store = async value => {
+    try {
+      await AsyncStorage.setItem('plan', value);
+    } catch (e) {
+      console.log(e);
+    }
+  };
+
+  const setMulti = (text, storage) => {
+    switch (storage) {
+      case 'breakfast':
+        setMultiBreak(text);
+        break;
+      case 'lunch':
+        setMultiLunch(text);
+        break;
+      case 'dinner':
+        setMultiDinner(text);
+        break;
+      case 'dessert':
+        setMultiDessert(text);
+        break;
+      case 'snack':
+        setMultiSnack(text);
+        break;
+    }
+  };
+  const updateEdit = async (text, date, id, update) => {
+    let w;
+    await get('plan')
+      .then(value => value)
+      .then(data => {
+        w = data;
+      })
+      .catch(err => console.log(err));
+    w = JSON.parse(w);
+    let year = d.getFullYear();
+    let month = monthNames[d.getMonth()];
+    // console.log(w[year][month]);
+
+    // let index;
+    // for (let i = 0; i < w[year][month].length; i++) {
+    //   if (date === w[year][month][i].date) {
+    //     index = i;
+    //     // break;
+    //   }
+    // }
+    let same = w[year][month][Index];
+    w[year][month][Index][update][id].multi = text;
+    same.totalCals = sum(same, 0);
+    same.totalCarbs = sum(same, 1);
+    same.totalFat = sum(same, 2);
+    same.totalProtein = sum(same, 3);
+    // w[year][month].map(item => {
+    //   if (date === item.date) {
+    //     item[update][id].multi = text;
+    //     console.log(item[update][id], 'this got');
+    //   }
+    // });
+    // console.log(item[update][id]);
+
+    // console.log(w[year][month][2]);
+    await store(JSON.stringify(w));
+    setMulti(text, update);
+  };
+  // 0 is food 1 is reflection 2 is editing
+  const topPressed = () => {
+    // let reflection = await AsyncStorage.getItem('Reflect');
+    // reflection = JSON.parse(reflection);
+    if (Reflect === 0) {
+      return (
+        <ScrollView>
+          {TopSame()}
+          <View style={styles.titles}>
+            <Text style={styles.textTitle}>Breakfast</Text>
+          </View>
+          {DayData.breakfast.map(item => {
+            return repetition(item);
+          })}
+
+          <View style={styles.titles}>
+            <Text style={styles.textTitle}>Lunch</Text>
+          </View>
+          {DayData.lunch.map(item => {
+            return repetition(item);
+          })}
+
+          <View style={styles.titles}>
+            <Text style={styles.textTitle}>Dinner</Text>
+          </View>
+          {DayData.dinner.map(item => {
+            return repetition(item);
+          })}
+
+          <View style={styles.titles}>
+            <Text style={styles.textTitle}>Dessert</Text>
+          </View>
+          {DayData.dessert.map(item => {
+            return repetition(item);
+          })}
+
+          <View style={styles.titles}>
+            <Text style={styles.textTitle}>Snacks</Text>
+          </View>
+          {DayData.snack.map(item => {
+            return repetition(item);
+          })}
+        </ScrollView>
+      );
+    } else if (Reflect === 1) {
+      return (
+        <View>
+          <View>
+            <Text style={styles.textDate}>
+              {d.getDate()}/{d.getMonth() + 1}/{d.getFullYear()}
+            </Text>
+          </View>
+          <ScrollView>
+            <Text style={styles.textReflect}>hello</Text>
+          </ScrollView>
+        </View>
+      );
+    } else {
+      return (
+        <ScrollView>
+          {TopSame()}
+
+          <View style={styles.titles}>
+            <Text style={styles.textTitle}>Breakfast</Text>
+          </View>
+          {DayData.breakfast.map(item => {
+            return (
+              <View key={item.id} style={styles.row}>
+                <View style={styles.MultipleWide}>
+                  <TextInput
+                    style={styles.TextMain}
+                    value={MultiBreak}
+                    onChangeText={text =>
+                      updateEdit(text, DayData.date, item.id, 'breakfast')
+                    }
+                    keyboardType={'numeric'}
+                  />
+                </View>
+                <View style={styles.MealWide}>
+                  <Text style={styles.TextMain}>{item.meal}</Text>
+                </View>
+                <View style={styles.MultipleWide}>
+                  <Text style={styles.TextMain}>{item.cals}</Text>
+                </View>
+                <View style={styles.MultipleWide}>
+                  <Text style={styles.TextMain}>{item.carbs}</Text>
+                </View>
+                <View style={styles.MultipleWide}>
+                  <Text style={styles.TextMain}>{item.fat}</Text>
+                </View>
+                <View style={styles.MultipleWide}>
+                  <Text style={styles.TextMain}>{item.protein}</Text>
+                </View>
+              </View>
+            );
+          })}
+
+          <TouchableOpacity
+            style={styles.button}
+            onPress={() => {
+              console.log(Index);
+              navigation.navigate('AddPage', {
+                title: 'Editing Breakfast',
+                update: 'breakfast',
+                num: DayData.breakfast.length,
+                date: DayData.date,
+                index: Index,
+              });
+            }}>
+            <Text>Click to add/subtract food</Text>
+          </TouchableOpacity>
+          <View style={styles.titles}>
+            <Text style={styles.textTitle}>Lunch</Text>
+          </View>
+          {DayData.lunch.map(item => {
+            return (
+              <View key={item.id} style={styles.row}>
+                <View style={styles.MultipleWide}>
+                  <TextInput
+                    style={styles.TextMain}
+                    value={MultiLunch}
+                    onChangeText={text =>
+                      updateEdit(text, DayData.date, item.id, 'lunch')
+                    }
+                    keyboardType={'numeric'}
+                  />
+                </View>
+                <View style={styles.MealWide}>
+                  <Text style={styles.TextMain}>{item.meal}</Text>
+                </View>
+                <View style={styles.MultipleWide}>
+                  <Text style={styles.TextMain}>{item.cals}</Text>
+                </View>
+                <View style={styles.MultipleWide}>
+                  <Text style={styles.TextMain}>{item.carbs}</Text>
+                </View>
+                <View style={styles.MultipleWide}>
+                  <Text style={styles.TextMain}>{item.fat}</Text>
+                </View>
+                <View style={styles.MultipleWide}>
+                  <Text style={styles.TextMain}>{item.protein}</Text>
+                </View>
+              </View>
+            );
+          })}
+
+          <View style={styles.titles}>
+            <Text style={styles.textTitle}>Dinner</Text>
+          </View>
+          {DayData.dinner.map(item => {
+            return (
+              <View key={item.id} style={styles.row}>
+                <View style={styles.MultipleWide}>
+                  <TextInput
+                    style={styles.TextMain}
+                    value={MultiDinner}
+                    onChangeText={text =>
+                      updateEdit(text, DayData.date, item.id, 'dinner')
+                    }
+                    keyboardType={'numeric'}
+                  />
+                </View>
+                <View style={styles.MealWide}>
+                  <Text style={styles.TextMain}>{item.meal}</Text>
+                </View>
+                <View style={styles.MultipleWide}>
+                  <Text style={styles.TextMain}>{item.cals}</Text>
+                </View>
+                <View style={styles.MultipleWide}>
+                  <Text style={styles.TextMain}>{item.carbs}</Text>
+                </View>
+                <View style={styles.MultipleWide}>
+                  <Text style={styles.TextMain}>{item.fat}</Text>
+                </View>
+                <View style={styles.MultipleWide}>
+                  <Text style={styles.TextMain}>{item.protein}</Text>
+                </View>
+              </View>
+            );
+          })}
+
+          <View style={styles.titles}>
+            <Text style={styles.textTitle}>Dessert</Text>
+          </View>
+          {DayData.dessert.map(item => {
+            return (
+              <View key={item.id} style={styles.row}>
+                <View style={styles.MultipleWide}>
+                  <TextInput
+                    style={styles.TextMain}
+                    value={MultiDessert}
+                    onChangeText={text =>
+                      updateEdit(text, DayData.date, item.id, 'dessert')
+                    }
+                    keyboardType={'numeric'}
+                  />
+                </View>
+                <View style={styles.MealWide}>
+                  <Text style={styles.TextMain}>{item.meal}</Text>
+                </View>
+                <View style={styles.MultipleWide}>
+                  <Text style={styles.TextMain}>{item.cals}</Text>
+                </View>
+                <View style={styles.MultipleWide}>
+                  <Text style={styles.TextMain}>{item.carbs}</Text>
+                </View>
+                <View style={styles.MultipleWide}>
+                  <Text style={styles.TextMain}>{item.fat}</Text>
+                </View>
+                <View style={styles.MultipleWide}>
+                  <Text style={styles.TextMain}>{item.protein}</Text>
+                </View>
+              </View>
+            );
+          })}
+
+          <View style={styles.titles}>
+            <Text style={styles.textTitle}>Snacks</Text>
+          </View>
+          {DayData.snack.map(item => {
+            return (
+              <View key={item.id} style={styles.row}>
+                <View style={styles.MultipleWide}>
+                  <TextInput
+                    style={styles.TextMain}
+                    value={MultiSnack}
+                    onChangeText={text =>
+                      updateEdit(text, DayData.date, item.id, 'snack')
+                    }
+                    keyboardType={'numeric'}
+                  />
+                </View>
+                <View style={styles.MealWide}>
+                  <Text style={styles.TextMain}>{item.meal}</Text>
+                </View>
+                <View style={styles.MultipleWide}>
+                  <Text style={styles.TextMain}>{item.cals}</Text>
+                </View>
+                <View style={styles.MultipleWide}>
+                  <Text style={styles.TextMain}>{item.carbs}</Text>
+                </View>
+                <View style={styles.MultipleWide}>
+                  <Text style={styles.TextMain}>{item.fat}</Text>
+                </View>
+                <View style={styles.MultipleWide}>
+                  <Text style={styles.TextMain}>{item.protein}</Text>
+                </View>
+              </View>
+            );
+          })}
+        </ScrollView>
+      );
+    }
+  };
+
+  const showing = () => {
+    if (typeof DayData !== 'undefined' && DayData !== '') {
+      // console.log(DayData, 'sum weird');
+      // Object.keys(DayData).forEach(function (key) {
+      //   console.log(key + ' ' + DayData[key]);
+      // });
+      return (
+        <View style={styles.scroll}>
+          <View style={styles.topRow}>
+            <TouchableOpacity
+              style={styles.showDiff}
+              onPress={() => setReflect(0)}>
+              <Text style={styles.buttonText}>Food</Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={styles.showDiff}
+              onPress={() => setReflect(1)}>
+              <Text style={styles.buttonText}>Reflection</Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={styles.showDiff}
+              onPress={() => setReflect(2)}>
+              <Text style={styles.buttonText}>Edit</Text>
+            </TouchableOpacity>
+          </View>
+          {topPressed()}
+        </View>
+      );
+    }
+  };
+
   return (
     <View style={styles.parent}>
       <CalendarList
+        markedDates={ShowDay}
         // Callback which gets executed when visible months change in scroll view. Default = undefined
         // onVisibleMonthsChange={months => {
         //   console.log('now these months are visible', months);
         // }}
         onDayPress={day => {
+          let dayFormat = day.dateString;
+          let place = {};
+          place[dayFormat] = {selected: true};
+          setShowDay(place);
           calendarPress(day);
         }}
         // // Max amount of months allowed to scroll to the past. Default = 50
@@ -430,6 +967,7 @@ const CalendarPage = () => {
         // Set custom calendarWidth.
         calendarWidth={375}
       />
+      {Show ? showing() : null}
     </View>
   );
 };
@@ -437,6 +975,118 @@ const CalendarPage = () => {
 const styles = StyleSheet.create({
   parent: {
     marginTop: 10,
+    backgroundColor: '#037971',
+    // marginBottom: 100,
+  },
+  topRow: {
+    marginHorizontal: 30,
+    marginVertical: 5,
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+  },
+  showDiff: {
+    height: 30,
+    width: 100,
+    backgroundColor: '#03B5AA',
+    borderRadius: 16,
+    justifyContent: 'center',
+  },
+  row: {
+    marginTop: 10,
+    marginHorizontal: 15,
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+  },
+  top: {
+    width: 80,
+    height: 50,
+    backgroundColor: 'white',
+    justifyContent: 'center',
+    borderRadius: 4,
+  },
+  topText: {
+    color: 'black',
+    textAlign: 'center',
+    fontSize: 12,
+  },
+  numberText: {
+    color: 'black',
+    textAlign: 'center',
+    fontSize: 16,
+  },
+  buttonText: {
+    color: '#007AFF',
+    textAlign: 'center',
+  },
+  scroll: {
+    height: 240,
+  },
+  each: {
+    height: 110,
+    width: 110,
+    borderWidth: 1,
+    borderRadius: 10,
+    margin: 5,
+    paddingHorizontal: 5,
+    overflow: 'hidden',
+  },
+  otherTop: {
+    fontSize: 12,
+    textAlign: 'center',
+  },
+  Multiple: {
+    width: 30,
+    height: 20,
+    justifyContent: 'center',
+  },
+  Meal: {
+    width: 150,
+    height: 20,
+    justifyContent: 'center',
+  },
+  MultipleWide: {
+    width: 30,
+    height: 60,
+    backgroundColor: '#03B5AA',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  MealWide: {
+    width: 150,
+    height: 60,
+    backgroundColor: '#03B5AA',
+    justifyContent: 'center',
+  },
+  TextMain: {
+    textAlign: 'center',
+  },
+  titles: {
+    marginTop: 10,
+    marginLeft: 15,
+  },
+  textTitle: {
+    fontWeight: 'bold',
+    fontSize: 16,
+  },
+  textDate: {
+    fontWeight: 'bold',
+    fontSize: 22,
+    marginTop: 10,
+    textAlign: 'center',
+  },
+  textReflect: {
+    fontSize: 16,
+    marginHorizontal: 30,
+    marginTop: 10,
+  },
+  check: {
+    marginTop: 5,
+    justifyContent: 'center',
+    height: 15,
+    width: 15,
+    borderWidth: 2,
+    borderColor: 'black',
+    backgroundColor: 'gold',
   },
 });
 
