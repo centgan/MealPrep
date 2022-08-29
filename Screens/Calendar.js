@@ -29,7 +29,6 @@ const storeValue = async (value, key) => {
   try {
     const jsonValue = JSON.stringify(value);
     await AsyncStorage.setItem(key, jsonValue);
-    // await AsyncStorage.setItem('Age', value);
   } catch (e) {
     console.log(e);
   }
@@ -762,7 +761,7 @@ const CalendarPage = ({navigation}) => {
                 index: Index,
               });
             }}>
-            <Text>Click to add/subtract food</Text>
+            <Text style={styles.addText}>Click to add/subtract food</Text>
           </TouchableOpacity>
           <View style={styles.titles}>
             <Text style={styles.textTitle}>Lunch</Text>
@@ -799,6 +798,20 @@ const CalendarPage = ({navigation}) => {
             );
           })}
 
+          <TouchableOpacity
+            style={styles.button}
+            onPress={() => {
+              console.log(Index);
+              navigation.navigate('AddPage', {
+                title: 'Editing Lunch',
+                update: 'lunch',
+                num: DayData.lunch.length,
+                date: DayData.date,
+                index: Index,
+              });
+            }}>
+            <Text style={styles.addText}>Click to add/subtract food</Text>
+          </TouchableOpacity>
           <View style={styles.titles}>
             <Text style={styles.textTitle}>Dinner</Text>
           </View>
@@ -834,6 +847,20 @@ const CalendarPage = ({navigation}) => {
             );
           })}
 
+          <TouchableOpacity
+            style={styles.button}
+            onPress={() => {
+              console.log(Index);
+              navigation.navigate('AddPage', {
+                title: 'Editing Dinner',
+                update: 'dinner',
+                num: DayData.dinner.length,
+                date: DayData.date,
+                index: Index,
+              });
+            }}>
+            <Text style={styles.addText}>Click to add/subtract food</Text>
+          </TouchableOpacity>
           <View style={styles.titles}>
             <Text style={styles.textTitle}>Dessert</Text>
           </View>
@@ -869,6 +896,20 @@ const CalendarPage = ({navigation}) => {
             );
           })}
 
+          <TouchableOpacity
+            style={styles.button}
+            onPress={() => {
+              console.log(Index);
+              navigation.navigate('AddPage', {
+                title: 'Editing Dessert',
+                update: 'dessert',
+                num: DayData.dessert.length,
+                date: DayData.date,
+                index: Index,
+              });
+            }}>
+            <Text style={styles.addText}>Click to add/subtract food</Text>
+          </TouchableOpacity>
           <View style={styles.titles}>
             <Text style={styles.textTitle}>Snacks</Text>
           </View>
@@ -903,6 +944,21 @@ const CalendarPage = ({navigation}) => {
               </View>
             );
           })}
+
+          <TouchableOpacity
+            style={styles.button}
+            onPress={() => {
+              console.log(Index);
+              navigation.navigate('AddPage', {
+                title: 'Editing Snack',
+                update: 'snack',
+                num: DayData.snack.length,
+                date: DayData.date,
+                index: Index,
+              });
+            }}>
+            <Text style={styles.addText}>Click to add/subtract food</Text>
+          </TouchableOpacity>
         </ScrollView>
       );
     }
@@ -1087,6 +1143,25 @@ const styles = StyleSheet.create({
     borderWidth: 2,
     borderColor: 'black',
     backgroundColor: 'gold',
+  },
+  button: {
+    marginTop: 10,
+    marginHorizontal: 15,
+    width: 350,
+    height: 20,
+    justifyContent: 'center',
+    backgroundColor: '#03B5AA',
+    borderRadius: 8,
+    shadowOffset: {
+      width: -5,
+      height: 5,
+    },
+    shadowOpacity: 1,
+  },
+  addText: {
+    color: '#198367',
+    textAlign: 'center',
+    fontWeight: 'bold',
   },
 });
 

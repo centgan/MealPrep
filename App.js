@@ -20,6 +20,7 @@ import CalendarPage from './Screens/Calendar';
 import Individual from './Screens/Individual';
 import SettingsPage from './Screens/Settings';
 import AddPage from './Screens/Add';
+import GroceryPage from './Screens/Grocery';
 
 const HomeStack = createNativeStackNavigator();
 const StackHome = () => {
@@ -129,6 +130,26 @@ const App: () => Node = () => {
               <View>
                 <Image
                   source={require('./Img/Food.png')}
+                  resizeMode="contain"
+                  style={{
+                    height: 30,
+                    width: 30,
+                    tintColor: focused ? '#007AFF' : 'black',
+                  }}
+                />
+              </View>
+            ),
+          }}
+        />
+        <Tab.Screen
+          name="Grocery"
+          component={GroceryPage}
+          options={{
+            headerShown: false,
+            tabBarIcon: ({focused}) => (
+              <View>
+                <Image
+                  source={require('./Img/Grocery.png')}
                   resizeMode="contain"
                   style={{
                     height: 30,
