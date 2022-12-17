@@ -1,6 +1,7 @@
 # MealPrep
 App created in React Native in order to accomplish all the needs I wanted in a meal plan app. Generates a new meal plan at the beginning of each month
-using https://mealprepmanual.com recipes. 
+using https://mealprepmanual.com recipes. None of the recipes used for this app are mine. The original recipes can be found on https://mealprepmanual.com
+or on https://www.youtube.com/@TheMealPrepManual. All credit goes towards Josh Cortis for creating these recipes.
 
 ## Set up
 Same process as setting up a regular npm project (https://reactnative.dev/docs/environment-setup) and requires the dependencies, react-native-calendars, 
