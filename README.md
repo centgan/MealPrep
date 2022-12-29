@@ -9,5 +9,5 @@ react-native-chart-kit, react-native-svg, @ovalmoney/react-native-fitness, @reac
 react-native-screens and @react-navigation/bottom-tabs
 
 ## Usage
-No need to add anything else everything should be set up, beginning of each month the program will run a planner function as well as a grocery list function. 
-The grocery list function is a work in process, its pretty shit. Need to include, functions to include allergies and other ways to set macro goals.
+No need to add anything else everything should be set up, beginning of each month the program will run a planner function. This will randomize all recipies and calculate how long each meal should last and when it will be needed to generate a new list of foods. A recipe will also show up however if there is still confusions a link will redirect you towards the https://mealprepmanual.com recipe
+
