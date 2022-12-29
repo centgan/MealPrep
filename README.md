@@ -10,4 +10,22 @@ react-native-screens and @react-navigation/bottom-tabs
 
 ## Usage
 No need to add anything else everything should be set up, beginning of each month the program will run a planner function. This will randomize all recipies and calculate how long each meal should last and when it will be needed to generate a new list of foods. A recipe will also show up however if there is still confusions a link will redirect you towards the https://mealprepmanual.com recipe
+### Home page
+Tells user steps taken, calories needed to consume and the activity level
 
+https://user-images.githubusercontent.com/83138403/210019369-b11de3f2-51c7-49c2-aa00-0d05d0e9c3bb.mov
+
+###Calendar
+Gives the user a day by day food needed to eat as well as allows them to edit 
+
+https://user-images.githubusercontent.com/83138403/210019451-fbced0ee-d9e4-47dd-bfcc-a5afb7dd2897.mov
+
+###Food
+A database of all food from https://mealprepmanual.com allows for searching and recipies
+
+https://user-images.githubusercontent.com/83138403/210019485-e9c26341-cdf0-4e60-b2c7-3451f69c08a8.mov
+
+###Grocery
+Gives a list of groceries that the user has to buy for each week. This is still a work in progress
+
+https://user-images.githubusercontent.com/83138403/210019555-9a46aa8d-85ed-4ef3-9014-e35d8fda1581.mov
