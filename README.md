@@ -21,7 +21,7 @@ https://user-images.githubusercontent.com/83138403/210019369-b11de3f2-51c7-49c2-
 
 Gives the user a day by day food needed to eat as well as allows them to edit 
 
-https://user-images.githubusercontent.com/83138403/210019555-9a46aa8d-85ed-4ef3-9014-e35d8fda1581.mov
+https://user-images.githubusercontent.com/83138403/223564495-5dc4e06a-ccb5-4573-ad03-eecf80e22abb.mp4
 
 
 ### Food
