@@ -21,7 +21,7 @@ https://user-images.githubusercontent.com/83138403/210019369-b11de3f2-51c7-49c2-
 
 Gives the user a day by day food needed to eat as well as allows them to edit 
 
-https://user-images.githubusercontent.com/83138403/210019451-fbced0ee-d9e4-47dd-bfcc-a5afb7dd2897.mov
+https://user-images.githubusercontent.com/83138403/210019555-9a46aa8d-85ed-4ef3-9014-e35d8fda1581.mov
 
 
 ### Food
@@ -35,4 +35,4 @@ https://user-images.githubusercontent.com/83138403/210019485-e9c26341-cdf0-4e60-
 
 Gives a list of groceries that the user has to buy for each week. This is still a work in progress
 
-https://user-images.githubusercontent.com/83138403/210019555-9a46aa8d-85ed-4ef3-9014-e35d8fda1581.mov
+https://user-images.githubusercontent.com/83138403/210019451-fbced0ee-d9e4-47dd-bfcc-a5afb7dd2897.mov
